@@ -19,4 +19,7 @@ __pycache__/
 # If you create a database or store API keys in a .env file:
 .env
 *.db
+get-pip.pyget-pip.py
+get-pip.py
+.venv/
 get-pip.py
