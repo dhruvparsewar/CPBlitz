@@ -1,0 +1,22 @@
+# --- Python Environment ---
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- VS Code Settings ---
+.vscode/
+
+# --- Linux System Files ---
+.DS_Store
+.directory
+*.swp
+*~
+
+# --- Project Specifics ---
+# If you create a database or store API keys in a .env file:
+.env
+*.db
+get-pip.py
