@@ -29,20 +29,52 @@ def run_game_loop(noOfProb, totProb, filtered, usr1, usr2):
         CURRENT_LINK = probLink
 
         while True:
+            # --- CHECK USER 1 ---
             l1 = "https://codeforces.com/api/user.status?handle=" + usr1 + "&from=1&count=10"
             status1 = requests.get(l1)
+            
+            # 1. Did the API reject the request entirely?
+            if status1.status_code != 200:
+                print(f"\n[WARNING] API Error for {usr1}! Status: {status1.status_code}")
+                print(f"Codeforces says: {status1.text}")
+                time.sleep(5) # Wait 5 seconds before trying again so you don't get banned
+                continue # Skip the rest of this loop iteration
+                
             s1Data = status1.json()
+            
+            # 2. Did Codeforces return a JSON error?
+            if s1Data.get("status") == "FAILED":
+                print(f"\n[WARNING] Codeforces rejected {usr1}: {s1Data.get('comment')}")
+                time.sleep(5)
+                continue
+
             results1 = s1Data.get("result", [])
             slvd1 = [r1 for r1 in results1 if r1["problem"]["contestId"] == int(contId) and r1["problem"]["index"] == probInd and r1.get("verdict") == "OK"]
 
-            time.sleep(2)
+            time.sleep(2) # Codeforces asks for at least 2 seconds between requests
             
+            # --- CHECK USER 2 ---
             l2 = "https://codeforces.com/api/user.status?handle=" + usr2 + "&from=1&count=10"
             status2 = requests.get(l2)
+            
+            # Safety net for User 2
+            if status2.status_code != 200:
+                print(f"\n[WARNING] API Error for {usr2}! Status: {status2.status_code}")
+                print(f"Codeforces says: {status2.text}")
+                time.sleep(5)
+                continue
+                
             s2Data = status2.json()
+            
+            if s2Data.get("status") == "FAILED":
+                print(f"\n[WARNING] Codeforces rejected {usr2}: {s2Data.get('comment')}")
+                time.sleep(5)
+                continue
+                
             results2 = s2Data.get("result", [])
             slvd2 = [r2 for r2 in results2 if r2["problem"]["contestId"] == int(contId) and r2["problem"]["index"] == probInd and r2.get("verdict") == "OK"]
 
+            # ... (keep your existing logic to check who won here) ...
             if slvd1 and not slvd2:
                 print("Solved by " + usr1)
                 p1 += 1
