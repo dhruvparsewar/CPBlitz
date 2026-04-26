@@ -29,30 +29,35 @@ def run_game_loop(noOfProb, totProb, filtered, usr1, usr2):
         CURRENT_LINK = probLink
 
         while True:
-            # --- CHECK USER 1 ---
-            l1 = "https://codeforces.com/api/user.status?handle=" + usr1 + "&from=1&count=10"
-            status1 = requests.get(l1)
+            try:
+                # --- CHECK USER 1 ---
+                l1 = "https://codeforces.com/api/user.status?handle=" + usr1 + "&from=1&count=10"
+                status1 = requests.get(l1, timeout=5) # Added a 5-second timeout
             
-            # 1. Did the API reject the request entirely?
-            if status1.status_code != 200:
-                print(f"\n[WARNING] API Error for {usr1}! Status: {status1.status_code}")
-                print(f"Codeforces says: {status1.text}")
-                time.sleep(5) # Wait 5 seconds before trying again so you don't get banned
-                continue # Skip the rest of this loop iteration
+                # 1. Did the API reject the request entirely?
+                if status1.status_code != 200:
+                    print(f"\n[WARNING] API Error for {usr1}! Status: {status1.status_code}")
+                    print(f"Codeforces says: {status1.text}")
+                    time.sleep(5) # Wait 5 seconds before trying again so you don't get banned
+                    continue # Skip the rest of this loop iteration
+                    
+                s1Data = status1.json()
                 
-            s1Data = status1.json()
-            
-            # 2. Did Codeforces return a JSON error?
-            if s1Data.get("status") == "FAILED":
-                print(f"\n[WARNING] Codeforces rejected {usr1}: {s1Data.get('comment')}")
+                # 2. Did Codeforces return a JSON error?
+                if s1Data.get("status") == "FAILED":
+                    print(f"\n[WARNING] Codeforces rejected {usr1}: {s1Data.get('comment')}")
+                    time.sleep(5)
+                    continue
+
+                results1 = s1Data.get("result", [])
+                slvd1 = [r1 for r1 in results1 if r1["problem"]["contestId"] == int(contId) and r1["problem"]["index"] == probInd and r1.get("verdict") == "OK"]
+
+                time.sleep(2) # Codeforces asks for at least 2 seconds between requests
+            except requests.exceptions.RequestException as e:
+                # If the Wi-Fi drops, it prints this and tries again 5 seconds later
+                print(f"\n[NETWORK ERROR] Could not reach Codeforces. Waiting for internet to return...")
                 time.sleep(5)
                 continue
-
-            results1 = s1Data.get("result", [])
-            slvd1 = [r1 for r1 in results1 if r1["problem"]["contestId"] == int(contId) and r1["problem"]["index"] == probInd and r1.get("verdict") == "OK"]
-
-            time.sleep(2) # Codeforces asks for at least 2 seconds between requests
-            
             # --- CHECK USER 2 ---
             l2 = "https://codeforces.com/api/user.status?handle=" + usr2 + "&from=1&count=10"
             status2 = requests.get(l2)
