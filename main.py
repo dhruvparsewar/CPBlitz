@@ -78,8 +78,6 @@ def run_game_loop(noOfProb, totProb, filtered, usr1, usr2):
                 
             results2 = s2Data.get("result", [])
             slvd2 = [r2 for r2 in results2 if r2["problem"]["contestId"] == int(contId) and r2["problem"]["index"] == probInd and r2.get("verdict") == "OK"]
-
-            # ... (keep your existing logic to check who won here) ...
             if slvd1 and not slvd2:
                 print("Solved by " + usr1)
                 p1 += 1
